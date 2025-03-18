@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir Tipo de Conta | K6 Finanças{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Excluir Tipo de Conta</h4>
+                </div>
+                <div class="card-body">
+                    {% if has_contas %}
+                    <div class="alert alert-danger">
+                        <p><strong>Não é possível excluir este tipo de conta.</strong></p>
+                        <p>Existem contas associadas a este tipo. Altere o tipo dessas contas primeiro antes de excluir.
+                        </p>
+                    </div>
+                    {% else %}
+                    <p>Tem certeza que deseja excluir o tipo de conta "<strong>{{ tipo.nome }}</strong>"?</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'core:tipos_conta_lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-danger">Excluir</button>
+                        </div>
+                    </form>
+                    {% endif %}
+
+                    {% if has_contas %}
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'core:tipos_conta_lista' %}" class="btn btn-outline-secondary">Voltar</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

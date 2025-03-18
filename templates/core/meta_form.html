@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if editar %}Editar{% else %}Nova{% endif %} Meta - Minhas Finanças{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5>{% if editar %}Editar{% else %}Nova{% endif %} Meta Financeira</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.descricao.id_for_label }}" class="form-label">Descrição da Meta</label>
+                            {{ form.descricao }}
+                            {% if form.descricao.errors %}
+                            <div class="text-danger">
+                                {{ form.descricao.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.valor.id_for_label }}" class="form-label">Valor da Meta (R$)</label>
+                            {{ form.valor }}
+                            {% if form.valor.errors %}
+                            <div class="text-danger">
+                                {{ form.valor.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if not editar %}
+                        <div class="mb-3">
+                            <label for="{{ form.valor_inicial.id_for_label }}" class="form-label">Valor Inicial
+                                (R$)</label>
+                            {{ form.valor_inicial }}
+                            {% if form.valor_inicial.errors %}
+                            <div class="text-danger">
+                                {{ form.valor_inicial.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.data_limite.id_for_label }}" class="form-label">Data Limite</label>
+                            {{ form.data_limite }}
+                            {% if form.data_limite.errors %}
+                            <div class="text-danger">
+                                {{ form.data_limite.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'core:metas_lista' %}" class="btn btn-secondary me-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Definir data mínima como hoje para campo de data limite
+        const dataLimiteInput = document.getElementById('{{ form.data_limite.id_for_label }}');
+        const hoje = new Date().toISOString().split('T')[0];
+
+        // Só aplicar restrição para novas metas
+        {% if not editar %}
+        dataLimiteInput.min = hoje;
+        {% endif %}
+    });
+</script>
+{% endblock %}

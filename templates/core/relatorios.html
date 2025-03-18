@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+
+{% block title %}Relatórios - Minhas Finanças{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Relatórios</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Filtros</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="data_inicio" class="form-label">Data Início</label>
+                            <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ filtros.data_inicio|default:'' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="data_fim" class="form-label">Data Fim</label>
+                            <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ filtros.data_fim|default:'' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tipo_relatorio" class="form-label">Tipo de Relatório</label>
+                            <select class="form-select" id="tipo_relatorio" name="tipo_relatorio">
+                                <option value="mensal" {% if filtros.tipo_relatorio == 'mensal' %}selected{% endif %}>Mensal</option>
+                                <option value="categoria" {% if filtros.tipo_relatorio == 'categoria' %}selected{% endif %}>Por Categoria</option>
+                                <option value="conta" {% if filtros.tipo_relatorio == 'conta' %}selected{% endif %}>Por Conta</option>
+                                <option value="fluxo" {% if filtros.tipo_relatorio == 'fluxo' %}selected{% endif %}>Fluxo de Caixa</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Gerar Relatório</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Relatório Mensal -->
+    {% if filtros.tipo_relatorio == 'mensal' or not filtros.tipo_relatorio %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Resumo Mensal</h5>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Imprimir
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <canvas id="chartMensal" height="300"></canvas>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Mês</th>
+                                            <th>Receitas</th>
+                                            <th>Despesas</th>
+                                            <th>Saldo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Janeiro</td>
+                                            <td class="text-success">R$ 5.000,00</td>
+                                            <td class="text-danger">R$ 3.500,00</td>
+                                            <td class="text-primary">R$ 1.500,00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fevereiro</td>
+                                            <td class="text-success">R$ 5.200,00</td>
+                                            <td class="text-danger">R$ 4.000,00</td>
+                                            <td class="text-primary">R$ 1.200,00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Março</td>
+                                            <td class="text-success">R$ 5.500,00</td>
+                                            <td class="text-danger">R$ 3.800,00</td>
+                                            <td class="text-primary">R$ 1.700,00</td>
+                                        </tr>
+                                        <!-- Adicionar mais meses dinamicamente -->
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <th>Total</th>
+                                            <th class="text-success">R$ 15.700,00</th>
+                                            <th class="text-danger">R$ 11.300,00</th>
+                                            <th class="text-primary">R$ 4.400,00</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Relatório por Categoria -->
+    {% if filtros.tipo_relatorio == 'categoria' %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Despesas por Categoria</h5>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Imprimir
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <canvas id="chartCategorias" height="300"></canvas>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Categoria</th>
+                                            <th>Valor Total</th>
+                                            <th>Percentual</th>
+                                            <th>Qtd. Transações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Alimentação</td>
+                                            <td class="text-danger">R$ 1.200,00</td>
+                                            <td>25%</td>
+                                            <td>15</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Moradia</td>
+                                            <td class="text-danger">R$ 1.800,00</td>
+                                            <td>38%</td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Transporte</td>
+                                            <td class="text-danger">R$ 800,00</td>
+                                            <td>17%</td>
+                                            <td>12</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Lazer</td>
+                                            <td class="text-danger">R$ 500,00</td>
+                                            <td>10%</td>
+                                            <td>8</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Outros</td>
+                                            <td class="text-danger">R$ 500,00</td>
+                                            <td>10%</td>
+                                            <td>7</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <th>Total</th>
+                                            <th class="text-danger">R$ 4.800,00</th>
+                                            <th>100%</th>
+                                            <th>45</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Relatório de Fluxo de Caixa -->
+    {% if filtros.tipo_relatorio == 'fluxo' %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Fluxo de Caixa</h5>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Imprimir
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Conta</th>
+                                    <th>Entrada</th>
+                                    <th>Saída</th>
+                                    <th>Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>01/03/2025</td>
+                                    <td>Saldo Inicial</td>
+                                    <td>-</td>
+                                    <td>Conta Corrente</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>R$ 5.000,00</td>
+                                </tr>
+                                <tr>
+                                    <td>03/03/2025</td>
+                                    <td>Salário</td>
+                                    <td>Salário</td>
+                                    <td>Conta Corrente</td>
+                                    <td class="text-success">R$ 4.500,00</td>
+                                    <td>-</td>
+                                    <td>R$ 9.500,00</td>
+                                </tr>
+                                <tr>
+                                    <td>05/03/2025</td>
+                                    <td>Aluguel</td>
+                                    <td>Moradia</td>
+                                    <td>Conta Corrente</td>
+                                    <td>-</td>
+                                    <td class="text-danger">R$ 1.200,00</td>
+                                    <td>R$ 8.300,00</td>
+                                </tr>
+                                <!-- Mais transações -->
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <th colspan="4">Total</th>
+                                    <th class="text-success">R$ 5.500,00</th>
+                                    <th class="text-danger">R$ 3.800,00</th>
+                                    <th>R$ 7.700,00</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Gráfico para relatório mensal
+    {% if filtros.tipo_relatorio == 'mensal' or not filtros.tipo_relatorio %}
+    const ctxMensal = document.getElementById('chartMensal').getContext('2d');
+    const chartMensal = new Chart(ctxMensal, {
+        type: 'line',
+        data: {
+            labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'],
+            datasets: [
+                {
+                    label: 'Receitas',
+                    data: [5000, 5200, 5500, 5300, 5700, 5800],
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                },
+                {
+                    label: 'Despesas',
+                    data: [3500, 4000, 3800, 4200, 4100, 3900],
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                },
+                {
+                    label: 'Saldo',
+                    data: [1500, 1200, 1700, 1100, 1600, 1900],
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Gráfico para relatório por categoria
+    {% if filtros.tipo_relatorio == 'categoria' %}
+    const ctxCategorias = document.getElementById('chartCategorias').getContext('2d');
+    const chartCategorias = new Chart(ctxCategorias, {
+        type: 'doughnut',
+        data: {
+            labels: ['Alimentação', 'Moradia', 'Transporte', 'Lazer', 'Outros'],
+            datasets: [{
+                data: [1200, 1800, 800, 500, 500],
+                backgroundColor: [
+                    '#fd7e14', '#20c997', '#0dcaf0', '#6f42c1', '#adb5bd'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

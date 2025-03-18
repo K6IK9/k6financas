@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}Contas - Minhas Finanças{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Minhas Contas</h1>
+        <div>
+            <a href="{% url 'core:transferencia' %}" class="btn btn-outline-primary me-2">
+                <i class="bi bi-arrow-left-right"></i> Transferência entre contas
+            </a>
+            <a href="{% url 'core:conta_criar' %}" class="btn btn-primary">
+                <i class="bi bi-plus"></i> Nova Conta
+            </a>
+        </div>
+    </div>
+
+    <!-- Resumo das Contas -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Resumo das Contas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center">Saldo Total</h5>
+                                    <h2 class="card-text text-center">R$ {{ saldo_total|default:"0.00"|floatformat:2 }}
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <canvas id="chartContas" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Contas -->
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+        {% for conta in contas %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title">{{ conta.nome }}</h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                id="dropdownMenuButton{{ conta.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end"
+                                aria-labelledby="dropdownMenuButton{{ conta.id }}">
+                                <li><a class="dropdown-item" href="{% url 'core:conta_editar' conta.id %}">Editar</a>
+                                </li>
+                                <li><a class="dropdown-item" href="{% url 'core:conta_excluir' conta.id %}">Excluir</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ conta.tipo.nome|default:"Sem tipo definido" }}</h6>
+                    <div class="card-text mt-3">
+                        <h3 class="text-primary mb-0">R$ {{ conta.saldo|floatformat:2 }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                Você ainda não tem contas cadastradas. Crie uma nova conta utilizando o botão "Nova Conta".
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+
+<!-- Modal Transferência -->
+<div class="modal fade" id="modalTransferencia" tabindex="-1" aria-labelledby="modalTransferenciaLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTransferenciaLabel">Transferência entre Contas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'core:transferencia' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="conta_origem" class="form-label">Conta de Origem</label>
+                        <select class="form-select" id="conta_origem" name="conta_origem" required>
+                            <option value="">Selecione a conta de origem</option>
+                            {% for conta in contas %}
+                            <option value="{{ conta.id }}">{{ conta.nome }} (R$ {{ conta.saldo|floatformat:2 }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="conta_destino" class="form-label">Conta de Destino</label>
+                        <select class="form-select" id="conta_destino" name="conta_destino" required>
+                            <option value="">Selecione a conta de destino</option>
+                            {% for conta in contas %}
+                            <option value="{{ conta.id }}">{{ conta.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="valor" class="form-label">Valor (R$)</label>
+                        <input type="number" step="0.01" class="form-control" id="valor" name="valor" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="data" class="form-label">Data</label>
+                        <input type="date" class="form-control" id="data" name="data" value="{{ hoje|date:'Y-m-d' }}"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <input type="text" class="form-control" id="descricao" name="descricao"
+                            value="Transferência entre contas">
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Transferir</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nova Transação -->
+<div class="modal fade" id="modalNovaTransacao" tabindex="-1" aria-labelledby="modalNovaTransacaoLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalNovaTransacaoLabel">Nova Transação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'core:transacao_criar' %}">
+                    {% csrf_token %}
+                    <input type="hidden" id="transacao_conta" name="conta">
+                    <input type="hidden" id="transacao_tipo" name="tipo">
+                    <div class="mb-3">
+                        <label for="valor" class="form-label">Valor (R$)</label>
+                        <input type="number" step="0.01" class="form-control" id="valor" name="valor" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="data" class="form-label">Data</label>
+                        <input type="date" class="form-control" id="data" name="data" value="{{ hoje|date:'Y-m-d' }}"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <input type="text" class="form-control" id="descricao" name="descricao">
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Gráfico de distribuição de contas
+    const ctxContas = document.getElementById('chartContas').getContext('2d');
+    const chartContas = new Chart(ctxContas, {
+        type: 'bar',
+        data: {
+            labels: [{% for conta in contas %}'{{ conta.nome }}',{% endfor %}],
+    datasets: [{
+        label: 'Saldo (R$)',
+        data: [{% for conta in contas %}{{ conta.saldo }}, {% endfor %}],
+        backgroundColor: [
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(153, 102, 255, 0.7)',
+            'rgba(255, 159, 64, 0.7)',
+            'rgba(255, 99, 132, 0.7)'
+        ],
+            borderColor: [
+                'rgba(75, 192, 192, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(255, 99, 132, 1)'
+            ],
+                borderWidth: 1
+            }]
+        },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+    });
+
+    // Configurar modal de transferência
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalTransferencia = document.getElementById('modalTransferencia');
+        if (modalTransferencia) {
+            modalTransferencia.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const contaOrigem = button.getAttribute('data-conta-origem');
+                if (contaOrigem) {
+                    document.getElementById('conta_origem').value = contaOrigem;
+                }
+            });
+        }
+
+        // Configurar modal de nova transação
+        const modalNovaTransacao = document.getElementById('modalNovaTransacao');
+        if (modalNovaTransacao) {
+            modalNovaTransacao.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const conta = button.getAttribute('data-conta');
+                const tipo = button.getAttribute('data-tipo');
+                document.getElementById('transacao_conta').value = conta;
+                document.getElementById('transacao_tipo').value = tipo;
+            });
+        }
+    });
+</script>
+{% endblock %}

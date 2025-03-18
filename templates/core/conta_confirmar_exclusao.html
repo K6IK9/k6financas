@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Exclusão - Minhas Finanças{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Exclusão</h5>
+                </div>
+                <div class="card-body">
+                    <p>Tem certeza que deseja excluir a conta:</p>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ conta.nome }}</h5>
+                            <p class="card-text"><strong>Tipo:</strong> {{ conta.get_tipo_display }}</p>
+                            <p class="card-text"><strong>Saldo atual:</strong> R$ {{ conta.saldo|floatformat:2 }}</p>
+                        </div>
+                    </div>
+
+                    {% if has_transacoes %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-ban me-2"></i>Esta conta possui transações associadas e não pode ser excluída.
+                        <p class="mb-0 mt-2">Você precisa excluir todas as transações desta conta antes de excluí-la.
+                        </p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>Esta ação não pode ser desfeita.
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'core:contas_lista' %}" class="btn btn-secondary me-2">Cancelar</a>
+                        {% if not has_transacoes %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Excluir</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

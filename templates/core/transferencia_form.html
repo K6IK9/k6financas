@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Transferência entre Contas - Minhas Finanças{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Transferência entre Contas</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.conta_origem.id_for_label }}" class="form-label">Conta de Origem</label>
+                            {{ form.conta_origem }}
+                            {% if form.conta_origem.errors %}
+                            <div class="text-danger">
+                                {{ form.conta_origem.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.conta_destino.id_for_label }}" class="form-label">Conta de
+                                Destino</label>
+                            {{ form.conta_destino }}
+                            {% if form.conta_destino.errors %}
+                            <div class="text-danger">
+                                {{ form.conta_destino.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.valor.id_for_label }}" class="form-label">Valor (R$)</label>
+                            {{ form.valor }}
+                            {% if form.valor.errors %}
+                            <div class="text-danger">
+                                {{ form.valor.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.data.id_for_label }}" class="form-label">Data</label>
+                            {{ form.data }}
+                            {% if form.data.errors %}
+                            <div class="text-danger">
+                                {{ form.data.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.descricao.id_for_label }}" class="form-label">Descrição</label>
+                            {{ form.descricao }}
+                            {% if form.descricao.errors %}
+                            <div class="text-danger">
+                                {{ form.descricao.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'core:contas_lista' %}" class="btn btn-secondary me-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Transferir</button>
+                        </div>
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger mt-3">
+                            {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const origemSelect = document.getElementById('{{ form.conta_origem.id_for_label }}');
+        const destinoSelect = document.getElementById('{{ form.conta_destino.id_for_label }}');
+
+        // Evitar que a mesma conta seja selecionada nos dois campos
+        origemSelect.addEventListener('change', function () {
+            const origemId = origemSelect.value;
+
+            // Habilitar todas as opções no select de destino
+            for (let i = 0; i < destinoSelect.options.length; i++) {
+                destinoSelect.options[i].disabled = false;
+            }
+
+            // Desabilitar a opção da conta de origem no select de destino
+            if (origemId) {
+                for (let i = 0; i < destinoSelect.options.length; i++) {
+                    if (destinoSelect.options[i].value === origemId) {
+                        destinoSelect.options[i].disabled = true;
+
+                        // Se a conta desabilitada estiver selecionada, limpar a seleção
+                        if (destinoSelect.value === origemId) {
+                            destinoSelect.value = '';
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+
+        destinoSelect.addEventListener('change', function () {
+            const destinoId = destinoSelect.value;
+
+            // Habilitar todas as opções no select de origem
+            for (let i = 0; i < origemSelect.options.length; i++) {
+                origemSelect.options[i].disabled = false;
+            }
+
+            // Desabilitar a opção da conta de destino no select de origem
+            if (destinoId) {
+                for (let i = 0; i < origemSelect.options.length; i++) {
+                    if (origemSelect.options[i].value === destinoId) {
+                        origemSelect.options[i].disabled = true;
+
+                        // Se a conta desabilitada estiver selecionada, limpar a seleção
+                        if (origemSelect.value === destinoId) {
+                            origemSelect.value = '';
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+
+        // Executar lógica inicial
+        origemSelect.dispatchEvent(new Event('change'));
+    });
+</script>
+{% endblock %}

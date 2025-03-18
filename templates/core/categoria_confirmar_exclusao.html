@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Exclusão - Minhas Finanças{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Exclusão</h5>
+                </div>
+                <div class="card-body">
+                    <p>Tem certeza que deseja excluir a categoria:</p>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ categoria.nome }}</h5>
+                            <p class="card-text"><strong>Tipo:</strong> {{ categoria.get_tipo_display }}</p>
+                        </div>
+                    </div>
+
+                    {% if has_transacoes %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>Esta categoria possui transações associadas.
+                        <p class="mb-0 mt-2">As transações permanecerão no sistema, porém ficarão sem categoria
+                            definida.</p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>Esta ação não pode ser desfeita.
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'core:categorias_lista' %}" class="btn btn-secondary me-2">Cancelar</a>
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Excluir</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

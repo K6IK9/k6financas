@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Minhas Finanças{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Dashboard</h1>
+    <p class="text-muted">Visão geral das suas finanças em {{ mes_atual }}</p>
+
+    <!-- Cards de resumo financeiro -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card card-dashboard income">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-arrow-down me-2"></i>Receitas</h5>
+                    <h2 class="card-text">R$ {{ receitas_mes|floatformat:2 }}</h2>
+                    <p class="card-text"><small>Total de receitas no mês</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-dashboard expense">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-arrow-up me-2"></i>Despesas</h5>
+                    <h2 class="card-text">R$ {{ despesas_mes|floatformat:2 }}</h2>
+                    <p class="card-text"><small>Total de despesas no mês</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-dashboard balance">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-balance-scale me-2"></i>Saldo</h5>
+                    <h2 class="card-text">R$ {{ saldo_mes|floatformat:2 }}</h2>
+                    <p class="card-text"><small>Diferença entre receitas e despesas</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico de Receitas vs. Despesas -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Receitas vs. Despesas</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="chartReceitasDespesas" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Categorias -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Despesas por Categoria</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="chartCategorias" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Transações Recentes -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Transações Recentes</h5>
+                    <a href="{% url 'core:transacoes_lista' %}" class="btn btn-sm btn-primary">Ver todas</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Conta</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in transacoes_recentes %}
+                                <tr>
+                                    <td>{{ t.data|date:"d/m/Y" }}</td>
+                                    <td>{{ t.descricao }}</td>
+                                    <td>{{ t.categoria.nome }}</td>
+                                    <td>{{ t.conta.nome }}</td>
+                                    <td
+                                        class="{% if t.tipo == 'receita' %}text-success{% else %}text-danger{% endif %}">
+                                        {% if t.tipo == 'receita' %}+{% else %}-{% endif %}R$ {{ t.valor|floatformat:2
+                                        }}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Nenhuma transação registrada</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metas Financeiras -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Metas Pendentes</h5>
+                    <a href="#" class="btn btn-sm btn-primary">Ver todas</a>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for meta in metas_pendentes %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">{{ meta.descricao }}</h6>
+                                <small class="text-muted">Até {{ meta.data_limite|date:"d/m/Y" }}</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">R$ {{ meta.valor|floatformat:2 }}</span>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center">Nenhuma meta pendente</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Gráfico de Receitas vs. Despesas
+    const ctx1 = document.getElementById('chartReceitasDespesas').getContext('2d');
+    const chartReceitasDespesas = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'],
+            datasets: [
+                {
+                    label: 'Receitas',
+                    data: [1500, 1700, 1900, 1800, 2000, {{ receitas_mes }}],
+            backgroundColor: '#198754',
+        },
+                {
+            label: 'Despesas',
+            data: [1200, 1400, 1300, 1600, 1700, {{ despesas_mes }}],
+        backgroundColor: '#dc3545',
+                }
+            ]
+        },
+    options: {
+        responsive: true,
+            scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+    });
+
+    // Gráfico de Categorias
+    const ctx2 = document.getElementById('chartCategorias').getContext('2d');
+    const chartCategorias = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for cat in dados_categorias %}'{{ cat.nome }}'{% if not forloop.last %}, {% endif %}{% empty %}'Sem dados'{% endfor %}],
+            datasets: [{
+                data: [{% for cat in dados_categorias %}{{ cat.total }}{% if not forloop.last %}, {% endif %}{% empty %}1{% endfor %}],
+                backgroundColor: [
+                    '#fd7e14', '#20c997', '#0dcaf0', '#6f42c1', '#d63384', '#adb5bd',
+                    '#198754', '#dc3545', '#0d6efd', '#ffc107', '#6610f2', '#212529'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            return label + ': R$ ' + value.toFixed(2);
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

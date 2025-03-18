@@ -1,0 +1,261 @@
+<!-- templates/core/categorias.html -->
+{% extends 'base.html' %}
+
+{% block title %}Categorias - Minhas Finanças{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Categorias</h1>
+        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovaCategoria">
+            <i class="fas fa-plus me-2"></i>Nova Categoria
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-arrow-down text-success me-2"></i>Categorias de Receita</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Transações</th>
+                                    <th>Total</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for categoria in categorias_receita %}
+                                <tr>
+                                    <td>{{ categoria.nome }}</td>
+                                    <td>{{ categoria.total_transacoes }}</td>
+                                    <td class="text-success">R$ {{ categoria.total_valor|floatformat:2 }}</td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalEditarCategoria{{ categoria.id }}">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalExcluirCategoria{{ categoria.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Nenhuma categoria de receita encontrada</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-arrow-up text-danger me-2"></i>Categorias de Despesa</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Transações</th>
+                                    <th>Total</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for categoria in categorias_despesa %}
+                                <tr>
+                                    <td>{{ categoria.nome }}</td>
+                                    <td>{{ categoria.total_transacoes }}</td>
+                                    <td class="text-danger">R$ {{ categoria.total_valor|floatformat:2 }}</td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalEditarCategoria{{ categoria.id }}">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalExcluirCategoria{{ categoria.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Nenhuma categoria de despesa encontrada</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribuição de Despesas por Categoria -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Distribuição de Despesas por Categoria</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="chartDespesasCategorias" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nova Categoria -->
+<div class="modal fade" id="modalNovaCategoria" tabindex="-1" aria-labelledby="modalNovaCategoriaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalNovaCategoriaLabel">Nova Categoria</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'core:categoria_criar' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome da Categoria</label>
+                        <input type="text" class="form-control" id="nome" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo</label>
+                        <select class="form-select" id="tipo" name="tipo" required>
+                            <option value="receita">Receita</option>
+                            <option value="despesa">Despesa</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cor" class="form-label">Cor</label>
+                        <input type="color" class="form-control form-control-color" id="cor" name="cor" value="#198754">
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Categoria (criar um para cada categoria) -->
+{% for categoria in categorias %}
+<div class="modal fade" id="modalEditarCategoria{{ categoria.id }}" tabindex="-1" aria-labelledby="modalEditarCategoriaLabel{{ categoria.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarCategoriaLabel{{ categoria.id }}">Editar Categoria</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'core:categoria_editar' categoria.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="nome{{ categoria.id }}" class="form-label">Nome da Categoria</label>
+                        <input type="text" class="form-control" id="nome{{ categoria.id }}" name="nome" value="{{ categoria.nome }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipo{{ categoria.id }}" class="form-label">Tipo</label>
+                        <select class="form-select" id="tipo{{ categoria.id }}" name="tipo" required>
+                            <option value="receita" {% if categoria.tipo == 'receita' %}selected{% endif %}>Receita</option>
+                            <option value="despesa" {% if categoria.tipo == 'despesa' %}selected{% endif %}>Despesa</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cor{{ categoria.id }}" class="form-label">Cor</label>
+                        <input type="color" class="form-control form-control-color" id="cor{{ categoria.id }}" name="cor" value="{{ categoria.cor }}">
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modal Excluir Categoria (criar um para cada categoria) -->
+{% for categoria in categorias %}
+<div class="modal fade" id="modalExcluirCategoria{{ categoria.id }}" tabindex="-1" aria-labelledby="modalExcluirCategoriaLabel{{ categoria.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalExcluirCategoriaLabel{{ categoria.id }}">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a categoria <strong>{{ categoria.nome }}</strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Esta ação não pode ser desfeita e pode afetar transações existentes.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" action="{% url 'core:categoria_excluir' categoria.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Gráfico de distribuição de despesas por categoria
+    const ctxDespesasCategorias = document.getElementById('chartDespesasCategorias').getContext('2d');
+    const chartDespesasCategorias = new Chart(ctxDespesasCategorias, {
+        type: 'pie',
+        data: {
+            labels: [{% for categoria in categorias_despesa %}'{{ categoria.nome }}',{% endfor %}],
+            datasets: [{
+                data: [{% for categoria in categorias_despesa %}{{ categoria.total_valor|default:0 }},{% endfor %}],
+                backgroundColor: [
+                    '#fd7e14', '#20c997', '#0dcaf0', '#6f42c1', '#dc3545', 
+                    '#ffc107', '#198754', '#0d6efd', '#6610f2', '#d63384'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            let value = context.raw || 0;
+                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = Math.round((value / total) * 100);
+                            return `${label}: R$ ${value.toFixed(2)} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

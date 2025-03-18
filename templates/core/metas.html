@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+
+{% block title %}Metas Financeiras - Minhas Finanças{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Metas Financeiras</h1>
+        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovaMeta">
+            <i class="fas fa-plus me-2"></i>Nova Meta
+        </a>
+    </div>
+
+    <!-- Resumo das Metas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Metas Ativas</h5>
+                    <h2 class="card-text">{{ metas_ativas|default:0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Economizado</h5>
+                    <h2 class="card-text">R$ {{ total_economizado|default:"0.00"|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Metas Concluídas</h5>
+                    <h2 class="card-text">{{ metas_concluidas|default:0 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Metas -->
+    <div class="row">
+        {% for meta in metas %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 {% if meta.concluida %}border-success{% endif %}">
+                <div
+                    class="card-header d-flex justify-content-between align-items-center {% if meta.concluida %}bg-success text-white{% endif %}">
+                    <h5 class="mb-0">{{ meta.nome }}</h5>
+                    <div class="dropdown">
+                        <button
+                            class="btn btn-sm {% if meta.concluida %}btn-outline-light{% else %}btn-outline-secondary{% endif %} dropdown-toggle"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#modalEditarMeta{{ meta.id }}">Editar</a></li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#modalDepositarMeta{{ meta.id }}">Adicionar Valor</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#modalExcluirMeta{{ meta.id }}">Excluir</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Progresso:</span>
+                            <span>{{ meta.porcentagem_concluida|floatformat:0 }}%</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar {% if meta.concluida %}bg-success{% endif %}" role="progressbar"
+                                style="width: {{ meta.porcentagem_concluida }}%;"
+                                aria-valuenow="{{ meta.porcentagem_concluida }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                    <p class="card-text"><strong>Valor Atual:</strong> R$ {{ meta.valor_atual|floatformat:2 }}</p>
+                    <p class="card-text"><strong>Valor Meta:</strong> R$ {{ meta.valor_meta|floatformat:2 }}</p>
+                    <p class="card-text"><strong>Data Limite:</strong> {{ meta.data_limite|date:"d/m/Y" }}</p>
+
+                    {% if meta.concluida %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>Meta concluída em {{ meta.data_conclusao|date:"d/m/Y" }}
+                    </div>
+                    {% else %}
+                    <div class="d-flex justify-content-between">
+                        <span>
+                            <strong>Faltam:</strong> R$ {{ meta.valor_faltante|floatformat:2 }}
+                        </span>
+                        <span>
+                            <strong>{{ meta.dias_restantes }}</strong> dias
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    {% if not meta.concluida %}
+                    <a href="#" class="btn btn-primary w-100" data-bs-toggle="modal"
+                        data-bs-target="#modalDepositarMeta{{ meta.id }}">
+                        <i class="fas fa-plus-circle me-2"></i>Adicionar Depósito
+                    </a>
+                    {% else %}
+                    <button class="btn btn-outline-success w-100" disabled>
+                        <i class="fas fa-trophy me-2"></i>Meta Alcançada
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center" role="alert">
+                <i class="fas fa-info-circle me-2"></i>Você ainda não possui metas cadastradas.
+                <a href="#" class="alert-link" data-bs-toggle="modal" data-bs-target="#modalNovaMeta">Clique aqui</a>
+                para criar sua primeira meta.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal Nova Meta -->
+<div class="modal fade" id="modalNovaMeta" tabindex="-1" aria-labelledby="modalNovaMetaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalNovaMetaLabel">Nova Meta Financeira</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'core:meta_criar' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome da Meta</label>
+                        <input type="text" class="form-control" id="nome" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="valor_meta" class="form-label">Valor da Meta (R$)</label>
+                        <input type="number" step="0.01" class="form-control" id="valor_meta" name="valor_meta"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="valor_inicial" class="form-label">Valor Inicial (R$)</label>
+                        <input type="number" step="0.01" class="form-control" id="valor_inicial" name="valor_inicial"
+                            value="0.00">
+                    </div>
+                    <div class="mb-3">
+                        <label for="data_limite" class="form-label">Data Limite</label>
+                        <input type="date" class="form-control" id="data_limite" name="data_limite" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Depositar Meta (criar um para cada meta) -->
+{% for meta in metas %}
+<div class="modal fade" id="modalDepositarMeta{{ meta.id }}" tabindex="-1"
+    aria-labelledby="modalDepositarMetaLabel{{ meta.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDepositarMetaLabel{{ meta.id }}">Adicionar Valor à Meta: {{ meta.nome
+                    }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'core:meta_depositar' meta.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="valor{{ meta.id }}" class="form-label">Valor (R$)</label>
+                        <input type="number" step="0.01" class="form-control" id="valor{{ meta.id }}" name="valor"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="data{{ meta.id }}" class="form-label">Data</label>
+                        <input type="date" class="form-control" id="data{{ meta.id }}" name="data"
+                            value="{{ hoje|date:'Y-m-d' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="conta{{ meta.id }}" class="form-label">Fonte (opcional)</label>
+                        <select class="form-select" id="conta{{ meta.id }}" name="conta">
+                            <option value="">Selecione a conta de origem</option>
+                            {% for conta in contas %}
+                            <option value="{{ conta.id }}">{{ conta.nome }} (R$ {{ conta.saldo|floatformat:2 }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Adicionar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modal Editar Meta (criar um para cada meta) -->
+{% for meta in metas %}
+<div class="modal fade" id="modalEditarMeta{{ meta.id }}" tabindex="-1"
+    aria-labelledby="modalEditarMetaLabel{{ meta.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarMetaLabel{{ meta.id }}">Editar Meta: {{ meta.nome }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'core:meta_editar' meta.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="nome_edit{{ meta.id }}" class="form-label">Nome da Meta</label>
+                        <input type="text" class="form-control" id="nome_edit{{ meta.id }}" name="nome"
+                            value="{{ meta.nome }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao_edit{{ meta.id }}" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descricao_edit{{ meta.id }}" name="descricao"
+                            rows="3">{{ meta.descricao }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="valor_meta_edit{{ meta.id }}" class="form-label">Valor da Meta (R$)</label>
+                        <input type="number" step="0.01" class="form-control" id="valor_meta_edit{{ meta.id }}"
+                            name="valor_meta" value="{{ meta.valor_meta }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="data_limite_edit{{ meta.id }}" class="form-label">Data Limite</label>
+                        <input type="date" class="form-control" id="data_limite_edit{{ meta.id }}" name="data_limite"
+                            value="{{ meta.data_limite|date:'Y-m-d' }}" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modal Excluir Meta (criar um para cada meta) -->
+{% for meta in metas %}
+<div class="modal fade" id="modalExcluirMeta{{ meta.id }}" tabindex="-1"
+    aria-labelledby="modalExcluirMetaLabel{{ meta.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalExcluirMetaLabel{{ meta.id }}">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a meta <strong>{{ meta.nome }}</strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Esta ação não pode ser desfeita e todos os registros
+                    de depósitos relacionados serão removidos.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" action="{% url 'core:meta_excluir' meta.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Configuração do datepicker para a data limite das metas
+    document.addEventListener('DOMContentLoaded', function () {
+        // Definir data mínima como hoje para novos campos de data
+        const hoje = new Date().toISOString().split('T')[0];
+        document.getElementById('data_limite').min = hoje;
+
+        // Adicionar para os campos de edição
+        document.querySelectorAll('[id^="data_limite_edit"]').forEach(function (campo) {
+            campo.min = hoje;
+        });
+    });
+</script>
+{% endblock %}

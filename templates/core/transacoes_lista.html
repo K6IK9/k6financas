@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Transações - Minhas Finanças{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Transações</h1>
+        <a href="{% url 'core:transacao_criar' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nova Transação
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="data_inicio" class="form-label">Data Início</label>
+                    <input type="date" class="form-control" id="data_inicio" name="data_inicio">
+                </div>
+                <div class="col-md-3">
+                    <label for="data_fim" class="form-label">Data Fim</label>
+                    <input type="date" class="form-control" id="data_fim" name="data_fim">
+                </div>
+                <div class="col-md-2">
+                    <label for="tipo" class="form-label">Tipo</label>
+                    <select class="form-select" id="tipo" name="tipo">
+                        <option value="">Todos</option>
+                        <option value="receita">Receitas</option>
+                        <option value="despesa">Despesas</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="categoria" class="form-label">Categoria</label>
+                    <select class="form-select" id="categoria" name="categoria">
+                        <option value="">Todas</option>
+                        <!-- Adicionar categorias dinamicamente -->
+                        {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}">{{ categoria.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Transações -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Conta</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in transacoes %}
+                        <tr>
+                            <td>{{ t.data|date:"d/m/Y" }}</td>
+                            <td>{{ t.descricao }}</td>
+                            <td>
+                                <span
+                                    class="badge {% if t.tipo == 'receita' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ t.categoria.nome }}
+                                </span>
+                            </td>
+                            <td>{{ t.conta.nome }}</td>
+                            <td class="{% if t.tipo == 'receita' %}text-success{% else %}text-danger{% endif %}">
+                                {% if t.tipo == 'receita' %}+{% else %}-{% endif %}R$ {{ t.valor|floatformat:2 }}
+                            </td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal"
+                                    data-bs-target="#modalEditarTransacao{{ t.id }}">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-danger" data-bs-toggle="modal"
+                                    data-bs-target="#modalExcluirTransacao{{ t.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Nenhuma transação encontrada</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if transacoes.has_other_pages %}
+            <nav aria-label="Paginação de transações">
+                <ul class="pagination justify-content-center mt-4">
+                    {% if transacoes.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transacoes.previous_page_number }}" aria-label="Anterior">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                    {% endif %}
+
+                    {% for i in transacoes.paginator.page_range %}
+                    <li class="page-item {% if transacoes.number == i %}active{% endif %}">
+                        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if transacoes.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transacoes.next_page_number }}" aria-label="Próximo">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
