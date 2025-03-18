@@ -1,0 +1,71 @@
+# K6 Finanças - Requisitos de Bibliotecas e Dependências
+
+# Backend (Python/Django)
+Django==4.2.6
+djangorestframework==3.14.0
+django-cors-headers==4.1.0
+psycopg2-binary==2.9.6  # Para PostgreSQL
+mysqlclient==2.1.1  # Para MySQL (alternativa)
+django-environ==0.10.0  # Gerenciamento de variáveis de ambiente
+django-allauth==0.54.0  # Autenticação e gerenciamento de usuários
+djangorestframework-simplejwt==5.2.2  # Autenticação JWT
+celery==5.2.7  # Tarefas assíncronas (relatórios, notificações)
+redis==4.5.4  # Cache e broker para Celery
+Pillow==9.5.0  # Manipulação de imagens (fotos de perfil)
+pandas==2.0.1  # Análise de dados financeiros
+matplotlib==3.7.1  # Geração de gráficos
+openpyxl==3.1.2  # Exportação para Excel
+python-dateutil==2.8.2  # Manipulação de datas
+stripe==5.4.0  # Processamento de pagamentos (opcional)
+plaid-python==14.0.0  # Integração bancária (opcional)
+
+# Segurança e Validação
+django-filter==23.2  # Filtros avançados para API
+django-ratelimit==4.0.0  # Limitação de taxa
+django-otp==1.1.3  # Autenticação de dois fatores
+argon2-cffi==21.3.0  # Hash de senha seguro
+pydantic==1.10.7  # Validação de dados
+
+# Testes
+pytest==7.3.1
+pytest-django==4.5.2
+coverage==7.2.5
+model-bakery==1.11.0
+
+# Ferramentas de Desenvolvimento
+black==23.3.0  # Formatação de código
+flake8==6.0.0  # Linter
+isort==5.12.0  # Ordenação de imports
+pre-commit==3.3.1  # Hooks de pre-commit
+
+# Documentação
+drf-spectacular==0.26.2  # Documentação OpenAPI/Swagger
+
+# Infraestrutura
+gunicorn==20.1.0  # Servidor WSGI
+whitenoise==6.4.0  # Arquivos estáticos
+dj-database-url==2.0.0  # Configuração de banco de dados
+
+# Frontend (Node.js/React)
+# Nota: estas dependências geralmente ficariam em package.json
+# npm install --save:
+# - react@18.2.0
+# - react-dom@18.2.0
+# - react-router-dom@6.11.2
+# - @mui/material@5.13.2 (UI components)
+# - @mui/icons-material@5.11.16
+# - axios@1.4.0 (requisições HTTP)
+# - recharts@2.6.2 (gráficos)
+# - formik@2.4.0 (formulários)
+# - yup@1.2.0 (validação)
+# - dayjs@1.11.7 (manipulação de datas)
+# - react-query@3.39.3 (gerenciamento de estado)
+
+# Mobile (React Native - opcional)
+# npm install --save:
+# - react-native@0.71.8
+# - react-native-reanimated@3.1.0
+# - @react-navigation/native@6.1.6
+# - react-native-chart-kit@6.12.0
+# - react-native-vector-icons@9.2.0
+# - @react-native-async-storage/async-storage@1.18.1

@@ -93,8 +93,7 @@
                                     <td>{{ t.conta.nome }}</td>
                                     <td
                                         class="{% if t.tipo == 'receita' %}text-success{% else %}text-danger{% endif %}">
-                                        {% if t.tipo == 'receita' %}+{% else %}-{% endif %}R$ {{ t.valor|floatformat:2
-                                        }}
+                                        {% if t.tipo == 'receita' %}+{% else %}-{% endif %}R$ {{ t.valor|floatformat:2}}
                                     </td>
                                 </tr>
                                 {% empty %}
