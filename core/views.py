@@ -104,6 +104,7 @@ def transacoes_lista(request):
     data_fim = request.GET.get("data_fim")
     tipo = request.GET.get("tipo")
     categoria_id = request.GET.get("categoria")
+    
 
     # Base da consulta
     transacoes = Transacao.objects.filter(usuario=request.user)
@@ -131,10 +132,18 @@ def transacoes_lista(request):
 
     # Obter categorias para o filtro
     categorias = Categoria.objects.filter(usuario=request.user)
+    
+    # Obter contas para o filtro
+    contas = Conta.objects.filter(usuario=request.user)
+    
+    #obter 
+    
 
+    
     context = {
         "transacoes": transacoes_paginadas,
         "categorias": categorias,
+        "contas": contas,
         "filtros": {
             "data_inicio": data_inicio,
             "data_fim": data_fim,
@@ -151,6 +160,9 @@ def transacoes_lista(request):
 def transacao_criar(request):
     if request.method == "POST":
         form = TransacaoForm(user=request.user, data=request.POST)  # <-- Aqui!
+        categorias = Categoria.objects.filter(usuario=request.user)
+        
+        form.fields["categoria"].queryset = categorias
         if form.is_valid():
             transacao = form.save(commit=False)
             transacao.usuario = request.user
@@ -168,7 +180,16 @@ def transacao_criar(request):
             messages.success(request, "Transação registrada com sucesso!")
             return redirect("core:transacoes_lista")
     else:
-        form = TransacaoForm(user=request.user)  # <-- Aqui!
+        if request.method == 'GET':
+            form = TransacaoForm()
+            categorias = Categoria.objects.all()  # Garantindo que todas as categorias sejam carregadas
+            context = {
+                'form': form,
+                'categorias': categorias,  # Adicionando categorias ao contexto
+            }
+        return render(request, 'core/transacao_form.html', context)
+        
+        # form = TransacaoForm(user=request.user)  # <-- Aqui!
 
     return render(request, "core/transacao_form.html", {"form": form})
 

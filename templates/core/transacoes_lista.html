@@ -81,11 +81,11 @@
                             <td>
                                 <a href="#" class="btn btn-sm btn-info" data-bs-toggle="modal"
                                     data-bs-target="#modalEditarTransacao{{ t.id }}">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="fas fa-edit">Edit</i>
                                 </a>
                                 <a href="#" class="btn btn-sm btn-danger" data-bs-toggle="modal"
                                     data-bs-target="#modalExcluirTransacao{{ t.id }}">
-                                    <i class="fas fa-trash"></i>
+                                    <i class="fas fa-trash">Excluir</i>
                                 </a>
                             </td>
                         </tr>
@@ -139,5 +139,88 @@
 </div>
 
 
+
+
+<!-- Modais -->
+{% for t in transacoes %}
+<div class="modal fade" id="modalEditarTransacao{{ t.id }}" tabindex="-1" aria-labelledby="modalEditarTransacao{{ t.id }}"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Transação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'core:transacao_editar' t.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <input type="text" class="form-control" id="descricao" name="descricao" value="{{ t.descricao }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="data" class="form-label">Data</label>
+                        <input type="date" class="form-control" id="data" name="data" value="{{ t.data }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="valor" class="form-label">Valor</label>
+                        <input type="text" class="form-control" id="valor" name="valor" value="{{ t.valor }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoria" class="form-label">Categoria</label>
+                        <select class="form-select" id="categoria" name="categoria">
+                            {% for categoria in categorias %}
+                            <option value="{{ categoria.id }}" {% if categoria.id == t.categoria.id %}selected{% endif %}>
+                                {{ categoria.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="conta" class="form-label">Conta</label>
+                        <select class="form-select" id="conta" name="conta">
+                            {% for conta in contas %}
+                            <option value="{{ conta.id }}" {% if conta.id == t.conta.id %}selected{% endif %}>
+                                {{ conta.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo</label>
+                        <select class="form-select" id="tipo" name="tipo">
+                            <option value="receita" {% if t.tipo == 'receita' %}selected{% endif %}>Receita</option>
+                            <option value="despesa" {% if t.tipo == 'despesa' %}selected{% endif %}>Despesa</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% for t in transacoes %}
+<div class="modal fade" id="modalExcluirTransacao{{ t.id }}" tabindex="-1" aria-labelledby="modalExcluirTransacao{{ t.id }}"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Excluir Transação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir a transação <strong>{{ t.descricao }}</strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="{% url 'core:transacao_excluir' t.id %}" class="btn btn-danger">Excluir</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endfor %}
 
 {% endblock %}

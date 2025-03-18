@@ -58,12 +58,19 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="{{ form.categoria.id_for_label }}" class="form-label">Categoria</label>
-                                {{ form.Categoria }}
+                                <label>Categoria</label>
+                                <select name="categoria" class="form-control" required>
+                                    <option value="">---------</option>
+                                    {% for categoria in categorias %}
+                                        <option value="{{ categoria.id }}" {% if form.categoria.value == categoria.id %}selected{% endif %}>
+                                            {{ categoria.nome }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
                                 {% if form.categoria.errors %}
-                                <div class="text-danger">
-                                    {{ form.categoria.errors.0 }}
-                                </div>
+                                    <div class="alert alert-danger">
+                                        {{ form.categoria.errors }}
+                                    </div>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
