@@ -47,5 +47,11 @@ yarn-error.log*
 *.sqlite3
 *.db
 
-_pytest
-_pycache_
+__pycache__
+
+*.*~
+
+*.pyc
+
+.idea
+

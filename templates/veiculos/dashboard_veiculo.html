@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">Dashboard de Abastecimentos</h2>
+
+    <!-- Exibição de Estatísticas -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Gasto</h5>
+                    <p class="card-text">R$ {{ total_gasto }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total de Litros</h5>
+                    <p class="card-text">{{ total_litros }} L</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Média Preço/Litro</h5>
+                    <p class="card-text">R$ {{ media_preco_litro }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Média de Consumo</h5>
+                    <p class="card-text">{{ media_consumo }} km/L</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Abastecimentos -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Posto</th>
+                    <th>Combustível</th>
+                    <th>Total Gasto (R$)</th>
+                    <th>Litros</th>
+                    <th>Preço/Litro (R$)</th>
+                    <th>KM Atual</th>
+                    <th>Pagamento</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for abastecimento in abastecimentos %}
+                <tr>
+                    <td>{{ abastecimento.data }}</td>
+                    <td>{{ abastecimento.posto|default:"-" }}</td>
+                    <td>{{ abastecimento.get_tipo_combustivel_display }}</td>
+                    <td>R$ {{ abastecimento.total_gasto }}</td>
+                    <td>{{ abastecimento.litros }} L</td>
+                    <td>R$ {{ abastecimento.preco_por_litro }}</td>
+                    <td>{{ abastecimento.km_atual }} km</td>
+                    <td>{{ abastecimento.metodo_pagamento.nome }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">Nenhum abastecimento cadastrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <a href="{% url 'veiculos:registrar_abastecimento' %}" class="btn btn-primary mt-3">Novo Abastecimento</a>
+</div>
+{% endblock %}

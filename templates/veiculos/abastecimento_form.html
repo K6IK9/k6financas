@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">Registrar Abastecimento</h2>
+
+    {% if messages %}
+        <div class="alert alert-info">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_data" class="form-label">Data do Abastecimento</label>
+            {{ form.data }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_total_gasto" class="form-label">Total Gasto (R$)</label>
+            {{ form.total_gasto }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_litros" class="form-label">Litros Abastecidos</label>
+            {{ form.litros }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_preco_por_litro" class="form-label">Preço por Litro (R$)</label>
+            {{ form.preco_por_litro }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_tipo_combustivel" class="form-label">Tipo de Combustível</label>
+            {{ form.tipo_combustivel }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_km_atual" class="form-label">Quilometragem Atual (km)</label>
+            {{ form.km_atual }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_posto" class="form-label">Posto de Abastecimento</label>
+            {{ form.posto }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_cidade" class="form-label">Cidade</label>
+            <input type="text" name="cidade" value="{{ form.cidade.value|default:'Campo Verde' }}" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label for="id_metodo_pagamento" class="form-label">Método de Pagamento</label>
+            {{ form.metodo_pagamento }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_observacao" class="form-label">Observação</label>
+            {{ form.observacao }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Salvar</button>
+    </form>
+</div>
+{% endblock %}
