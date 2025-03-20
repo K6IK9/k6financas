@@ -58,6 +58,55 @@ class Transacao(models.Model):
         verbose_name_plural = "Transações"
         ordering = ["-data"]  # Ordena do mais recente para o mais antigo
 
+    def save(self, *args, **kwargs):
+        # Verificar se é uma nova transação ou uma atualização
+        is_new = self.pk is None  # Nova transação
+        
+        if not is_new:
+            # Em caso de atualização, obter a versão anterior da transação
+            try:
+                antiga = Transacao.objects.get(pk=self.pk)
+                
+                # Somente reverter o efeito se o valor ou tipo mudou
+                if antiga.valor != self.valor or antiga.tipo != self.tipo or antiga.conta != self.conta:
+                    # Reverter o efeito anterior
+                    if antiga.tipo == "receita":
+                        antiga.conta.saldo -= antiga.valor
+                    else:
+                        antiga.conta.saldo += antiga.valor
+                    antiga.conta.save()
+                    
+                    # Aplicar novo efeito
+                    if self.tipo == "receita":
+                        self.conta.saldo += self.valor
+                    else:
+                        self.conta.saldo -= self.valor
+                    self.conta.save()
+                
+            except Transacao.DoesNotExist:
+                # Se por algum motivo não encontrar a transação anterior, trata como nova
+                is_new = True
+        
+        if is_new:  # Nova transação
+            # Atualizar saldo da conta
+            if self.tipo == "receita":
+                self.conta.saldo += self.valor
+            else:
+                self.conta.saldo -= self.valor
+            self.conta.save()
+        
+        super(Transacao, self).save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        # Reverter efeito da transação no saldo da conta antes de excluir
+        if self.tipo == "receita":
+            self.conta.saldo -= self.valor
+        else:
+            self.conta.saldo += self.valor
+        self.conta.save()
+        
+        super(Transacao, self).delete(*args, **kwargs)
+
 
 class Meta(models.Model):
     descricao = models.CharField(max_length=100)

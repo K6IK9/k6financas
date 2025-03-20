@@ -159,23 +159,14 @@ def transacoes_lista(request):
 @login_required
 def transacao_criar(request):
     if request.method == "POST":
-        form = TransacaoForm(user=request.user, data=request.POST)  # <-- Aqui!
+        form = TransacaoForm(user=request.user, data=request.POST)
         categorias = Categoria.objects.filter(usuario=request.user)
         
         form.fields["categoria"].queryset = categorias
         if form.is_valid():
             transacao = form.save(commit=False)
             transacao.usuario = request.user
-
-            # Atualizar saldo da conta
-            conta = transacao.conta
-            if transacao.tipo == "receita":
-                conta.saldo += transacao.valor
-            else:
-                conta.saldo -= transacao.valor
-
-            conta.save()
-            transacao.save()
+            transacao.save()  # O método save() do modelo agora cuida da atualização do saldo
 
             messages.success(request, "Transação registrada com sucesso!")
             return redirect("core:transacoes_lista")
@@ -188,8 +179,6 @@ def transacao_criar(request):
                 'categorias': categorias,  # Adicionando categorias ao contexto
             }
         return render(request, 'core/transacao_form.html', context)
-        
-        # form = TransacaoForm(user=request.user)  # <-- Aqui!
 
     return render(request, "core/transacao_form.html", {"form": form})
 
@@ -197,30 +186,12 @@ def transacao_criar(request):
 @login_required
 def transacao_editar(request, pk):
     transacao = get_object_or_404(Transacao, pk=pk, usuario=request.user)
-    valor_original = transacao.valor
-    tipo_original = transacao.tipo
-    conta_original = transacao.conta
 
     if request.method == "POST":
         form = TransacaoForm(request.user, request.POST, instance=transacao)
         if form.is_valid():
-            # Reverter efeito da transação original
-            if tipo_original == "receita":
-                conta_original.saldo -= valor_original
-            else:
-                conta_original.saldo += valor_original
-            conta_original.save()
-
-            # Aplicar nova transação
-            transacao = form.save(commit=False)
-            if transacao.tipo == "receita":
-                transacao.conta.saldo += transacao.valor
-            else:
-                transacao.conta.saldo -= transacao.valor
-
-            transacao.conta.save()
-            transacao.save()
-
+            # O método save() do modelo agora verificará as mudanças e atualizará o saldo corretamente
+            form.save()
             messages.success(request, "Transação atualizada com sucesso!")
             return redirect("core:transacoes_lista")
     else:
@@ -235,16 +206,7 @@ def transacao_excluir(request, pk):
     transacao = get_object_or_404(Transacao, pk=pk, usuario=request.user)
 
     if request.method == "POST":
-        # Reverter efeito da transação no saldo da conta
-        conta = transacao.conta
-        if transacao.tipo == "receita":
-            conta.saldo -= transacao.valor
-        else:
-            conta.saldo += transacao.valor
-
-        conta.save()
-        transacao.delete()
-
+        transacao.delete()  # O método delete() do modelo já cuida de reverter o saldo
         messages.success(request, "Transação excluída com sucesso!")
         return redirect("core:transacoes_lista")
 
@@ -466,13 +428,7 @@ def transferencia(request):
                 observacao=f"Transferência de {conta_origem.nome}",
             )
 
-            # Atualizar saldos
-            conta_origem.saldo -= valor
-            conta_destino.saldo += valor
-
-            # Salvar tudo
-            conta_origem.save()
-            conta_destino.save()
+            # Salvar transações (o método save() do modelo cuida da atualização dos saldos)
             transacao_saida.save()
             transacao_entrada.save()
 
@@ -616,12 +572,10 @@ def meta_depositar(request, pk):
 
         meta.save()
 
-        # Se uma conta foi selecionada, debitar o valor dela
+        # Se uma conta foi selecionada, criar uma transação (o save() do modelo cuida do saldo)
         if conta_id:
             conta = get_object_or_404(Conta, pk=conta_id, usuario=request.user)
-            conta.saldo -= valor
-            conta.save()
-
+            
             # Registrar transação
             Transacao.objects.create(
                 descricao=f"Depósito para meta: {meta.descricao}",
