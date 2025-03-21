@@ -20,7 +20,7 @@ def registrar_abastecimento(request):
                 valor=abastecimento.total_gasto,
                 data=abastecimento.data,
                 tipo="despesa",
-                categoria=None,  # Pode definir uma categoria específica para abastecimento
+                categoria="Combustivel",  # Pode definir uma categoria específica para abastecimento
                 conta=abastecimento.metodo_pagamento,
                 usuario=request.user,
                 observacao=abastecimento.observacao,
