@@ -6,7 +6,7 @@
 
 - [x] Criar relatorio de combustivel
 - [x] Corrigir erro de contabilidade de transações
-
+- [x] Corrigir erro de contabilidade de transações, caso preço editado cobrava todo o proço novamente
 
 ### A Fazer
 
