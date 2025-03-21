@@ -126,7 +126,9 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-LOGIN_URL = "accounts/login/?next=/"  # URL para onde os usuários não autenticados são redirecionadosLOGOUT_REDIRECT_URL = '/login/'  # Redireciona para a página de login após o logout
+LOGIN_URL = "accounts/login/?next=/"  # URL para onde os usuários não autenticados são redirecionados
+
+# LOGOUT_REDIRECT_URL = '/login/'  # Redireciona para a página de login após o logout
 
 # LOGOUT_REDIRECT_URL = "accounts/login/?next=/"  # Redireciona para a página de login após o logoutLOGIN_REDIRECT_URL = '/'  # Redireciona para a página inicial após o login
 
