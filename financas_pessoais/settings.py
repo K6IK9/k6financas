@@ -77,9 +77,15 @@ WSGI_APPLICATION = "financas_pessoais.wsgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'neondb',
+        'USER': 'neondb_owner',
+        'PASSWORD': 'npg_m9ceywlEx1aY',
+        'HOST': 'ep-frosty-snow-a40yp8fn-pooler.us-east-1.aws.neon.tech',
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 
